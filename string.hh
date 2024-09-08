@@ -1,5 +1,6 @@
 #pragma once
 #include "prelude.hh"
+#include <string.h>
 
 // TODO: implement strcpy
 // TODO: implement strlen

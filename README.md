@@ -1,6 +1,6 @@
 to compile run:
 ```bash
-clang++ @compile_flags.txt -omain main.cc
+clang++ @compile_flags.txt -omain main.cc prelude.cc
 ```
 
-you can you your compiler of choice instead of clang++
+you can use your compiler of choice instead of clang++

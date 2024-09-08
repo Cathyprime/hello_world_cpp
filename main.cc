@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "etl_type_traits.h"
 #include "string.hh"
 #include "prelude.hh"
