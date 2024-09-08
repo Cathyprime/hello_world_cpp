@@ -1,0 +1,9 @@
+-nodefaultlibs
+-ffreestanding
+-nostdinc++
+-std=c++23
+-lc
+-fno-exceptions
+-fno-rtti
+-nostartfiles
+-e _start
