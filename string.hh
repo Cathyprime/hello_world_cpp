@@ -1,5 +1,5 @@
 #pragma once
-#include "prelude.hh"
+#include "allocs.hh"
 #include <string.h>
 
 // TODO: implement strcpy

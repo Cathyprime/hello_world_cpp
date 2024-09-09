@@ -5,15 +5,15 @@
 
 int main()
 {
-	String str{"Hello"};
+	String str("Hello");
 	str += ',';
 	str += ' ';
 	str += "World!";
 
-	String new_str{};
+	String new_str;
 	new_str = etl::move(str);
 
-	String some_str{"hi"};
+	String some_str("hi");
 
 	String third_str = some_str + " " + new_str;
 
