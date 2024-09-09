@@ -17,9 +17,13 @@ int main()
 
 	String third_str = some_str + " " + new_str;
 
-	printf("1: %s\n", (char*)new_str);
-	printf("2: %s\n", (char*)str);
-	printf("3: %s\n", (char*)third_str);
+	String empty_str;
+	empty_str += "Hello Gaymer";
+
+	printf("1: %s\n", new_str.c_str());
+	printf("2: %s\n", str.c_str());
+	printf("3: %s\n", third_str.c_str());
 	printf("4: %c\n", third_str[3]);
+	printf("5: %s\n", empty_str.c_str());
 	return 0;
 }

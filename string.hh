@@ -14,8 +14,8 @@ class String
 public:
 	String()
 		: m_len(0)
-		, m_cap(16)
-		, m_data(new char[16]){}
+		, m_cap(0)
+		, m_data(nullptr){}
 
 	String(size_t cap)
 		: m_len(0)
@@ -50,9 +50,8 @@ public:
 
 	String& operator=(String&& rhs) noexcept
 	{
-		if (this == &rhs) {
-			return *this;
-		}
+		if (this == &rhs)
+			goto defer;
 
 		delete[] m_data;
 		m_len = rhs.m_len;
@@ -62,6 +61,7 @@ public:
 		rhs.m_len = 0;
 		rhs.m_cap = 0;
 
+	defer:
 		return *this;
 	}
 
@@ -70,72 +70,63 @@ public:
 		delete[] m_data;
 	}
 
-	void push(char ch)
+	String& reserve(size_t additional_cap)
 	{
-		if (m_len >= m_cap) {
-			m_cap *= 2;
-			m_data = (char*)realloc(m_data, m_cap);
-		}
+		auto empty_space = m_cap - m_len;
+		if (empty_space >= additional_cap)
+			goto defer;
+
+		m_cap += additional_cap;
+		m_data = (char*)realloc(m_data, m_cap);
+	defer:
+		return *this;
+	}
+
+#define RESIZE(comp, new_cap) if (comp) { m_cap = new_cap; m_data = (char*)realloc(m_data, m_cap); }
+
+	String& push(char ch)
+	{
+		RESIZE(m_len >= m_cap, m_cap * 2)
 		m_data[m_len++] = ch;
+		return *this;
 	}
 
-	void push(const String& str)
+	String& push(const String& str)
 	{
-		if (m_len + str.m_len > m_cap) {
-			m_cap = m_len + str.m_len;
-			m_data = (char*)realloc(m_data, m_cap);
-		}
+		RESIZE(m_len + str.m_len > m_cap, m_len + str.m_len)
 		m_len += str.m_len;
 		strcat(m_data, str.m_data);
+		return *this;
 	}
 
-	void push(String&& str)
+	String& push(String&& str)
 	{
-		if (m_len + str.m_len > m_cap) {
-			m_cap = m_len + str.m_len;
-			m_data = (char*)realloc(m_data, m_cap);
-		}
+		RESIZE(m_len + str.m_len > m_cap, m_len + str.m_len)
 		m_len += str.m_len;
 		strcat(m_data, str.m_data);
-	}
-
-	operator const char*()
-	{
-		return m_data;
-	}
-
-	operator char*()
-	{
-		return m_data;
-	}
-
-	String& operator+=(const String& rhs)
-	{
-		push(rhs);
 		return *this;
 	}
 
-	String& operator+=(String&& rhs)
-	{
-		push(rhs);
-		return *this;
-	}
+#undef RESIZE
 
-	String& operator+=(const char* rhs)
-	{
-		push(rhs);
-		return *this;
-	}
+#define get(type, what, which) type what() { return which; }
+	get(size_t, len, m_len)
+	get(size_t, cap, m_cap)
+	get(char*, c_str, m_data)
+#undef get
 
-	String& operator+=(char ch)
-	{
-		push(ch);
-		return *this;
-	}
+#define op(T) void operator+=(T rhs) { push(rhs); }
+	op(const String&)
+	op(String&&)
+	op(const char*)
+	op(char)
+#undef op
 
-	char operator[](size_t ch)
+	char operator[](size_t x)
 	{
-		return m_data[ch];
+		if (x >= m_len) // segfault if out of bounds :)
+			*(volatile int*)0 = 0;
+		return m_data[x];
 	}
 };
 
