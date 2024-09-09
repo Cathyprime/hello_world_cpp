@@ -17,13 +17,17 @@ int main()
 
 	String third_str = some_str + " " + new_str;
 
-	String empty_str;
-	empty_str += "Hello Gaymer";
+	String moved_in;
+	moved_in += "Hello Gaymer";
+
+	String copied;
+	copied = moved_in;
 
 	printf("1: %s\n", new_str.c_str());
 	printf("2: %s\n", str.c_str());
 	printf("3: %s\n", third_str.c_str());
 	printf("4: %c\n", third_str[3]);
-	printf("5: %s\n", empty_str.c_str());
+	printf("5: %s\n", moved_in.c_str());
+	printf("6: %s\n", copied.c_str());
 	return 0;
 }

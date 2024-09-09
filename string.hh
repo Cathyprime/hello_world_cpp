@@ -5,11 +5,25 @@
 // TODO: implement strcpy
 // TODO: implement strlen
 
+class String;
+
+template<typename T>
+concept is_concatable = etl::is_one_of<T, String, const String&, String&&, const char*, char>::value;
+
 class String
 {
 	size_t m_len;
 	size_t m_cap;
 	char* m_data;
+
+	void ensure_cap(size_t wanted)
+	{
+		if (m_cap >= wanted)
+			return;
+
+		m_cap = m_cap == 0 ? wanted : m_cap * 2;
+		m_data = (char*)realloc(m_data, m_cap);
+	}
 
 public:
 	String() noexcept
@@ -48,10 +62,32 @@ public:
 		other.m_cap = 0;
 	}
 
-	String& operator=(String&& rhs) noexcept
+	void operator=(const char* rhs) noexcept
+	{
+		size_t len = strlen(rhs);
+		m_len = len;
+		m_cap = len + 1;
+		m_data = new char[m_cap];
+		strcpy(m_data, rhs);
+	}
+
+	void operator=(const String& rhs) noexcept
 	{
 		if (this == &rhs)
-			return *this;
+			return;
+
+		if (m_data == nullptr)
+			m_data = new char[rhs.m_cap];
+
+		m_cap = rhs.m_cap;
+		m_len = rhs.m_len;
+		strcpy(m_data, rhs.m_data);
+	}
+
+	void operator=(String&& rhs) noexcept
+	{
+		if (this == &rhs)
+			return;
 
 		delete[] m_data;
 		m_len = rhs.m_len;
@@ -61,12 +97,17 @@ public:
 		rhs.m_len = 0;
 		rhs.m_cap = 0;
 
-		return *this;
+		return;
 	}
 
 	~String()
 	{
 		delete[] m_data;
+	}
+
+	bool is_empty()
+	{
+		return m_len == 0;
 	}
 
 	String& reserve(size_t additional_cap)
@@ -82,10 +123,7 @@ public:
 
 	String& push(char ch)
 	{
-		if (m_len >= m_cap) {
-			m_cap *= 2;
-			m_data = (char *)realloc(m_data, m_cap);
-		}
+		ensure_cap(m_len + 1);
 		m_data[m_len++] = ch;
 		return *this;
 	}
@@ -93,18 +131,44 @@ public:
 	String& push(const String& str)
 	{
 		if (m_data == nullptr) {
-			m_data = new char[str.m_cap];
-			m_cap = str.m_cap;
-			strcpy(m_data, str.c_str());
-			m_len = str.m_len;
+			*this = str;
 			return *this;
 		}
-		if (m_len + str.m_len > m_cap) {
-			m_cap = m_len + str.m_len;
-			m_data = (char*)realloc(m_data, m_cap);
-		}
+
+		ensure_cap(m_len + str.m_len);
 		m_len += str.m_len;
 		strcat(m_data, str.m_data);
+		return *this;
+	}
+
+	String& push(const char* c_str)
+	{
+		if (m_data == nullptr) {
+			*this = c_str;
+			return *this;
+		}
+
+		size_t len = strlen(c_str);
+		ensure_cap(len + m_len);
+		strcat(m_data, c_str);
+		m_len += len;
+		return *this;
+	}
+
+	String& push(String&& str)
+	{
+		if (this == &str) return *this;
+
+		if (m_data == nullptr) {
+			*this = etl::move(str);
+			return *this;
+		}
+
+		push(str.c_str());
+		delete[] str.m_data;
+		str.m_data = nullptr;
+		str.m_cap = 0;
+		str.m_len = 0;
 		return *this;
 	}
 
@@ -123,22 +187,9 @@ public:
 		return m_data;
 	}
 
-	void operator+=(const String &rhs)
-	{
-		push(rhs);
-	}
-
-	void operator+=(String &&rhs)
-	{
-		push(rhs);
-	}
-
-	void operator+=(const char *rhs)
-	{
-		push(rhs);
-	}
-
-	void operator+=(char rhs)
+	template<typename T>
+		requires is_concatable<T>
+	void operator+=(T rhs)
 	{
 		push(rhs);
 	}
@@ -151,11 +202,8 @@ public:
 	}
 };
 
-template<typename T>
-concept is_stringy = etl::is_one_of<T, String, const char*>::value;
-
 template<typename T, typename U>
-	requires is_stringy<T> && is_stringy<U>
+	requires is_concatable<T> && is_concatable<U>
 inline String operator+(T lhs, U rhs)
 {
 	String new_str(lhs);

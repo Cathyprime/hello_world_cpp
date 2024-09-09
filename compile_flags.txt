@@ -2,6 +2,7 @@
 -ffreestanding
 -nostdinc++
 -std=c++23
+-g
 -lc
 -fno-exceptions
 -fno-rtti
