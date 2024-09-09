@@ -12,17 +12,17 @@ class String
 	char* m_data;
 
 public:
-	String()
+	String() noexcept
 		: m_len(0)
 		, m_cap(0)
 		, m_data(nullptr){}
 
-	String(size_t cap)
+	String(size_t cap) noexcept
 		: m_len(0)
 		, m_cap(cap)
 		, m_data(new char[cap]){}
 
-	String(const char* c_str)
+	String(const char* c_str) noexcept
 		: m_len(strlen(c_str))
 		, m_cap(m_len + 1)
 	{
@@ -30,15 +30,15 @@ public:
 		strcpy(m_data, c_str);
 	}
 
-	String(const String& other)
+	String(const String& other) noexcept
 		: m_len(other.m_len)
 		, m_cap(other.m_cap)
 	{
 		m_data = new char[m_cap];
-		m_data = strcpy(m_data, other.m_data);
+		strcpy(m_data, other.m_data);
 	}
 
-	String(String&& other)
+	String(String&& other) noexcept
 	{
 		m_len = other.m_len;
 		m_cap = other.m_cap;
@@ -51,7 +51,7 @@ public:
 	String& operator=(String&& rhs) noexcept
 	{
 		if (this == &rhs)
-			goto defer;
+			return *this;
 
 		delete[] m_data;
 		m_len = rhs.m_len;
@@ -61,7 +61,6 @@ public:
 		rhs.m_len = 0;
 		rhs.m_cap = 0;
 
-	defer:
 		return *this;
 	}
 
@@ -74,77 +73,90 @@ public:
 	{
 		auto empty_space = m_cap - m_len;
 		if (empty_space >= additional_cap)
-			goto defer;
+			return *this;
 
 		m_cap += additional_cap;
 		m_data = (char*)realloc(m_data, m_cap);
-	defer:
 		return *this;
 	}
 
-#define RESIZE(comp, new_cap) if (comp) { m_cap = new_cap; m_data = (char*)realloc(m_data, m_cap); }
-
 	String& push(char ch)
 	{
-		RESIZE(m_len >= m_cap, m_cap * 2)
+		if (m_len >= m_cap) {
+			m_cap *= 2;
+			m_data = (char *)realloc(m_data, m_cap);
+		}
 		m_data[m_len++] = ch;
 		return *this;
 	}
 
 	String& push(const String& str)
 	{
-		RESIZE(m_len + str.m_len > m_cap, m_len + str.m_len)
+		if (m_data == nullptr) {
+			m_data = new char[str.m_cap];
+			m_cap = str.m_cap;
+			strcpy(m_data, str.c_str());
+			m_len = str.m_len;
+			return *this;
+		}
+		if (m_len + str.m_len > m_cap) {
+			m_cap = m_len + str.m_len;
+			m_data = (char*)realloc(m_data, m_cap);
+		}
 		m_len += str.m_len;
 		strcat(m_data, str.m_data);
 		return *this;
 	}
 
-	String& push(String&& str)
+	size_t len() const
 	{
-		RESIZE(m_len + str.m_len > m_cap, m_len + str.m_len)
-		m_len += str.m_len;
-		strcat(m_data, str.m_data);
-		return *this;
+		return m_len;
 	}
 
-#undef RESIZE
-
-#define get(type, what, which) type what() { return which; }
-	get(size_t, len, m_len)
-	get(size_t, cap, m_cap)
-	get(char*, c_str, m_data)
-#undef get
-
-#define op(T) void operator+=(T rhs) { push(rhs); }
-	op(const String&)
-	op(String&&)
-	op(const char*)
-	op(char)
-#undef op
-
-	char operator[](size_t x)
+	size_t cap() const
 	{
-		if (x >= m_len) // segfault if out of bounds :)
-			*(volatile int*)0 = 0;
+		return m_cap;
+	}
+
+	const char* c_str() const
+	{
+		return m_data;
+	}
+
+	void operator+=(const String &rhs)
+	{
+		push(rhs);
+	}
+
+	void operator+=(String &&rhs)
+	{
+		push(rhs);
+	}
+
+	void operator+=(const char *rhs)
+	{
+		push(rhs);
+	}
+
+	void operator+=(char rhs)
+	{
+		push(rhs);
+	}
+
+	char operator[](size_t x) const
+	{
+		if (x >= m_len)
+			*(volatile int*)0 = 0; // segfault if out of bounds :3
 		return m_data[x];
 	}
 };
 
-inline String operator+(const String& lhs, const String& rhs)
-{
-	String new_str{lhs};
-	new_str.push(rhs);
-	return new_str;
-}
+template<typename T>
+concept is_stringy = etl::is_one_of<T, String, const char*>::value;
 
-inline String operator+(const char* lhs, const String& rhs)
-{
-	String new_str(lhs);
-	new_str.push(rhs);
-	return new_str;
-}
-
-inline String operator+(const String& lhs, const char* rhs)
+template<typename T, typename U>
+	requires is_stringy<T> && is_stringy<U>
+inline String operator+(T lhs, U rhs)
 {
 	String new_str(lhs);
 	new_str.push(rhs);

@@ -98,13 +98,13 @@ namespace etl
 
     template <class C, class T>
     inline operator T C::* () const { return 0; }
-    
+
     inline bool operator==(nullptr_t) const { return true; }
     inline bool operator!=(nullptr_t) const { return false; }
   private:
     void operator&() const ETL_DELETE; // cannot take the address of ETL_NULLPTR
   };
-  
+
   static const nullptr_t _nullptr = nullptr_t();
 
   #define ETL_NULLPTR (etl::_nullptr)
@@ -826,7 +826,7 @@ namespace etl
   ///\ingroup type_traits
   /// Implemented by checking if type is convertible to an integer through static_cast
 
-  namespace private_type_traits 
+  namespace private_type_traits
   {
     // Base case
     template <typename T, typename = int>
@@ -838,7 +838,7 @@ namespace etl
     // 2nd template argument of base case defaults to int to ensure that this partial specialization is always tried first
     template <typename T>
     struct is_convertible_to_int<T, decltype(static_cast<int>(declval<T>()))>
-        : true_type 
+        : true_type
     {
     };
   }
@@ -848,7 +848,7 @@ namespace etl
     : integral_constant<bool, private_type_traits::is_convertible_to_int<T>::value &&
                               !is_class<T>::value &&
                               !is_arithmetic<T>::value &&
-                              !is_reference<T>::value> 
+                              !is_reference<T>::value>
   {
   };
 
@@ -1480,13 +1480,13 @@ typedef integral_constant<bool, true>  true_type;
   /// Template to determine if a type is one of a specified list.
   ///\ingroup types
   template <typename T,
-            typename T1, typename T2 = void, typename T3 = void, typename T4 = void, 
-            typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void, 
-            typename T9 = void, typename T10 = void, typename T11 = void, typename T12 = void, 
+            typename T1, typename T2 = void, typename T3 = void, typename T4 = void,
+            typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void,
+            typename T9 = void, typename T10 = void, typename T11 = void, typename T12 = void,
             typename T13 = void, typename T14 = void, typename T15 = void, typename T16 = void>
   struct is_one_of
   {
-    static const bool value = 
+    static const bool value =
         etl::is_same<T, T1>::value ||
         etl::is_same<T, T2>::value ||
         etl::is_same<T, T3>::value ||
@@ -2138,7 +2138,7 @@ typedef integral_constant<bool, true>  true_type;
 #if ETL_USING_CPP11
   //***************************************************************************
   /// is_constructible
-  namespace private_type_traits 
+  namespace private_type_traits
   {
     template <class, class T, class... Args>
     struct is_constructible_ : etl::false_type {};

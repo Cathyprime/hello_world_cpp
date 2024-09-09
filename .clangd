@@ -1,11 +1,5 @@
 CompileFlags:
   Add: [
-    -ffreestanding
-    -fno-exceptions
-    -fno-rtti
     -std=c++23
-    -nostdinc++
     -nodefaultlibs
-    -lc
-    -I./etl/include/
   ]
