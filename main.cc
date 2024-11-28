@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "etl_type_traits.h"
+#include "move.hh"
 #include "string.hh"
 #include "prelude.hh"
 
@@ -11,14 +11,14 @@ int main()
 	str += "World!";
 
 	String new_str;
-	new_str = etl::move(str);
+	new_str = cat::move(str);
 
 	String some_str("hi");
 
 	String third_str = some_str + " " + new_str;
 
 	String moved_in;
-	moved_in += "Hello Gaymer";
+	moved_in += "Hello World";
 
 	String copied;
 	copied = moved_in;

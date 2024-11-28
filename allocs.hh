@@ -1,8 +1,7 @@
 #pragma once
 typedef unsigned long size_t;
 
-void* malloc(size_t size);
-void free(void* ptr);
-void* calloc(size_t nmemb, size_t size);
-void* realloc(void* ptr, size_t size);
-void* reallocarray(void* ptr, size_t nmemb, size_t size);
+extern "C" void *malloc(size_t size) __THROW __attribute_malloc__;
+extern "C" void free (void *__ptr) __THROW;
+extern "C" void *realloc (void *__ptr, size_t __size)
+     __THROW __attribute_warn_unused_result__ __attribute_alloc_size__ ((2));

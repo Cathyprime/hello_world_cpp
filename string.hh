@@ -1,14 +1,13 @@
 #pragma once
-#include "allocs.hh"
 #include <string.h>
+
+#include "allocs.hh"
+#include "move.hh"
 
 // TODO: implement strcpy
 // TODO: implement strlen
 
 class String;
-
-template<typename T>
-concept is_concatable = etl::is_one_of<T, String, const String&, String&&, const char*, char>::value;
 
 class String
 {
@@ -160,7 +159,7 @@ public:
 		if (this == &str) return *this;
 
 		if (m_data == nullptr) {
-			*this = etl::move(str);
+			*this = cat::move(str);
 			return *this;
 		}
 
@@ -188,7 +187,6 @@ public:
 	}
 
 	template<typename T>
-		requires is_concatable<T>
 	void operator+=(T rhs)
 	{
 		push(rhs);
@@ -203,7 +201,6 @@ public:
 };
 
 template<typename T, typename U>
-	requires is_concatable<T> && is_concatable<U>
 inline String operator+(T lhs, U rhs)
 {
 	String new_str(lhs);
